@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, Play, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Play, CheckCircle2 } from 'lucide-react';
 import { HealthStatus, BatchRecoveryResult } from '../../types';
 import { recoveryApi } from '../../api';
 import { ConfirmDialog } from '../common/ConfirmDialog';
@@ -52,40 +52,13 @@ export const Header: React.FC<Props> = ({
           <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Simulation Pill */}
-          <div className="hidden sm:flex flex-col items-end">
-            <div
-              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800"
-              title="All recovery actions are simulated. No real financial transactions are executed."
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              <span>Simulation Mode</span>
-            </div>
-            <span className="text-[10px] text-slate-400 mt-0.5 max-w-[210px] text-right truncate">
-              Simulated transactions only
-            </span>
-          </div>
-
-          {/* Refresh Button */}
-          <button
-            onClick={onRefresh}
-            disabled={isLoading}
-            title="Refresh metrics"
-            className="p-2 rounded-lg bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 shadow-sm transition-colors disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
-          </button>
-
-          {/* Run Batch Recovery Button */}
-          <button
-            onClick={() => setIsBatchConfirmOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-colors active:scale-95"
-          >
-            <Play className="w-3.5 h-3.5 fill-current" />
-            <span>Run Batch Recovery</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setIsBatchConfirmOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all active:scale-95 whitespace-nowrap"
+        >
+          <Play className="w-3.5 h-3.5 fill-current" />
+          <span>Run Batch Recovery</span>
+        </button>
       </header>
 
       {/* Confirmation Dialog */}

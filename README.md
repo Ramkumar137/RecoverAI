@@ -1,238 +1,302 @@
-# RecoverAI — Autonomous AI Payment Revenue Recovery Platform
+# RecoverAI: Autonomous AI Payment Revenue Recovery Platform
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.141+-009688.svg?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18.3+-61DAFB.svg?style=flat&logo=react)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6.svg?style=flat&logo=typescript)](https://www.typescriptlang.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17+-336791.svg?style=flat&logo=postgresql)](https://www.postgresql.org)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4+-38B2AC.svg?style=flat&logo=tailwind-css)](https://tailwindcss.com)
-[![Gemini](https://img.shields.io/badge/Google%20GenAI-Gemini%202.5%20Flash-4285F4.svg?style=flat&logo=google)](https://ai.google.dev)
+RecoverAI is an autonomous payment intelligence and revenue recovery platform engineered for the Razorpay AI Buildathon under Track 03: AI Revenue Recovery. It identifies at-risk revenue from failed transactions, diagnoses underlying failure root causes using forensic telemetry, predicts recoverability, and executes policy-governed interventions to capture revenue without customer harassment or gateway penalties.
 
-Built for the **Razorpay AI Buildathon** under the **AI Revenue Recovery** track.
-
-> **Important Safety Principle**:
+> **Core Operating Principle**:
 > **AI recommends. Deterministic policy controls execution.**
-> All payment recovery actions operate strictly in **Simulation Mode** and do not connect to real banking networks or process live financial transactions.
+> All payment recovery actions operate strictly in Simulation Mode and do not connect to live banking networks or move real currency.
 
 ---
 
-## 💡 The Core Problem
+## Executive Summary
 
-Businesses lose millions in revenue every month because payments fail, subscriptions lapse, customers abandon checkouts, and invoices linger unpaid. Blind retry algorithms fail: they repeatedly hit exhausted card limits, annoy customers with duplicate SMS/WhatsApp spam, and trigger banking gateway sanctions.
+### The Revenue Failure Problem
 
-**RecoverAI answers the foundational product question:**
+Modern online merchants lose between 2% and 9% of gross merchandise value to payment failures. When a payment fails, traditional platforms typically respond with one of two flawed strategies:
+
+1. **Passive Abandonment**: The merchant takes no action, writing off the customer and the transaction as lost churn.
+2. **Blind Retry Storms**: The gateway blindly retries the payment immediately across the same rails. If the failure was caused by insufficient funds or account blocks, repeated retries exhaust card limits, trigger issuer fraud flags, damage merchant reputation, and rack up gateway failure penalties.
+
+### The RecoverAI Solution
+
+RecoverAI answers the central product question:
+
 > *"How much revenue can we recover, and what should we do next?"*
 
----
-
-## 🔄 End-to-End Recovery Lifecycle
-
-```
-DETECT          → Identify failed, expired, or abandoned payments across payment gateways
-  ↓
-DIAGNOSE        → Forensic classification of failure root cause (transient, systemic, liquidity)
-  ↓
-PREDICT         → ML recoverability scoring (0–100%) based on customer profile and tenure
-  ↓
-RECOMMEND       → Gemini 2.5 Flash AI Agent proposes recovery strategy, delay, and channel
-  ↓
-POLICY CHECK    → Deterministic Policy Engine validates recommendation against safety limits
-  ↓
-EXECUTE         → Bounded simulated recovery workflow execution with retry caps
-  ↓
-RECOVER         → Transaction settlement, idempotency guard, and zero double-counting
-  ↓
-AUDIT           → Immutable chronological audit trail recording every AI and policy decision
-  ↓
-MEASURE         → Real-time financial analytics, 14-day trends, and strategy conversion ROI
-```
+Instead of treating all failures identically, RecoverAI decouples decision-making from execution:
+- **Diagnostic Intelligence**: Evaluates error codes, network latency, customer history, and tenure.
+- **Recoverability Prediction**: Scores the statistical likelihood of payment capture (0% to 100%).
+- **Policy Enforcement**: A deterministic rule layer evaluates every AI suggestion against strict bounds (retry caps, cooldown windows, ticket size thresholds) before execution.
+- **Auditable Execution**: Every recommendation, policy validation, and outcome is logged immutably in PostgreSQL.
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
+
+The following diagram illustrates the component hierarchy and data flow across the client, backend, intelligence services, and persistence layers.
 
 ```
-React Frontend
-      |
-FastAPI Backend
-      |
-+-----+-----+-----+
-|     |     |     |
-Risk  ML   AI   Policy
-      |
-Recovery State Machine
-      |
-Payment Simulator
-      |
-PostgreSQL Database
-```
-
-### Detailed Component Interaction
-
-```
-React 18 + Vite + Tailwind CSS + Recharts + React Router
-   │  (Dashboard, Recovery Cases, Payments Ledger, Analytics, Audit Trail)
-   ▼ (HTTP REST)
-FastAPI Backend API
-   │
-   ├── Risk Detection Engine      (Revenue-at-Risk calculation & exposure tracking)
-   ├── Diagnostic Engine          (Failure root-cause classification)
-   ├── ML Recoverability Model    (Logistic Regression with Scikit-learn & Joblib)
-   ├── AI Investigation Agent     (Google GenAI SDK + Gemini 2.5 Flash structured output)
-   ├── Deterministic Policy Engine (Immutable business safety rules: max 3 retries, fatigue limits)
-   ├── Recovery State Machine     (8 legal state transitions & terminal boundaries)
-   ├── Payment Simulator Engine   (Deterministic MD5-hash reproducible probability roll)
-   └── Analytics & Audit Engine   (14-day trends, failure breakdowns, chronological timeline)
-   │
-   ▼ (SQLAlchemy 2.0 + Alembic)
-PostgreSQL 17 Database
-   ├── Customers (115 profiles, lifetime transaction histories)
-   ├── Merchants (23 registered businesses across categories)
-   ├── Payments (551 transactions across statuses & failure reasons)
-   ├── RecoveryCases (218 active & resolved recovery instances)
-   ├── RecoveryActions (bounded scheduled & executed recovery actions)
-   └── AuditLogs (2,530+ immutable chronological compliance events)
-```
-
----
-
-## 🧠 AI Layer Architecture
-
-```
-Payment Failure Telemetry
-   │
-   ▼
-7 Read-Only DB Forensic Tools (Customer Profile, Payment Details, Method History, Failure Patterns, etc.)
-   │
-   ▼
-Sanitized Investigation Context Builder (PII-free, ML score input, heuristic baseline)
-   │
-   ▼
-Gemini 2.5 Flash Agent (Senior Revenue Recovery & Payment Intelligence Analyst persona)
-   │   (Structured Output: Diagnosis, Confidence, Summary, Evidence, Action, Delay, Channel)
-   ▼
-Deterministic Policy Engine (Hard Guardrails)
-   ├── Max 3 retries limit (retry_count >= 3 -> STOP_RECOVERY)
-   ├── Card decline safety (prohibits naive retries on CARD_DECLINED / LIMIT_EXCEEDED)
-   ├── Minimum salvageability threshold (score < 20% -> STOP_RECOVERY)
-   ├── Critical value escalation (amount >= ₹50,000 with low score -> ESCALATE_TO_HUMAN)
-   └── 48-hour recovery window TTL
-   │
-   ▼
-Approved Recovery Workflow Execution (Simulated gateway retry, payment link, or reminder)
-   │
-   ▼
-Immutable Chronological Audit Log
++---------------------------------------------------------------------------------------------------+
+|                                      CLIENT INTERACTION LAYER                                     |
+|                                                                                                   |
+|   React 18 Dashboard (TypeScript, Vite, Tailwind CSS, Recharts)                                    |
+|   ├── Overview Dashboard (Live KPIs, Recovery Funnel, 14-Day Trend, Failure Breakdown)            |
+|   ├── Recovery Cases Ledger (Filterable Cohorts, Salvageability Index, Case Forensics)            |
+|   ├── Payment Explorer (Gateway Telemetry, Customer Tenure, Historical Patterns)                  |
+|   ├── Analytics Suite (Strategy ROI, Action Efficiency, Conversion Heatmaps)                      |
+|   └── Audit Log Viewer (Chronological Event Ledger, Actor Attribution, Metadata)                  |
++--------------------------------------------------+------------------------------------------------+
+                                                   |
+                                                   | HTTP REST / JSON
+                                                   v
++---------------------------------------------------------------------------------------------------+
+|                                      FASTAPI BACKEND SERVICE                                      |
+|                                                                                                   |
+|   Routing & Middleware Layer                                                                      |
+|   ├── Request Validation & Schema Serialization (Pydantic v2)                                     |
+|   ├── CORS & Security Middleware                                                                  |
+|   └── Dependency Injection & Transaction Context (SQLAlchemy Session)                             |
++---------+----------------------------------------+--------------------------------------+---------+
+          |                                        |                                      |
+          v                                        v                                      v
++-----------------------+        +-----------------------------------+        +---------------------+
+| RISK DETECTION ENGINE |        |     INTELLIGENCE TRIAD LAYER      |        | RECOVERY EXECUTION  |
+|                       |        |                                   |        |                     |
+| ├── Revenue-at-Risk   |        | 1. ML Scoring Model               |        | ├── State Machine   |
+| │   Aggregation       |        |    ├── Logistic Regression        |        | │   (8 Transitions) |
+| ├── Recoverable Pool  |        |    └── Feature Preprocessor       |        | ├── Gateway         |
+| │   Calculation       |        |                                   |        | │   Simulator       |
+| └── Cohort Exposure   |        | 2. Gemini 2.5 Flash Agent         |        | ├── Idempotency     |
+|     Tracking          |        |    ├── Forensic Investigation     |        | │   Guard           |
+|                       |        |    ├── Telemetry Evidence Parse   |        | └── Stopping Rule   |
+|                       |        |    └── Strategy Recommendation    |        |     Enforcer        |
+|                       |        |                                   |        |                     |
+|                       |        | 3. Deterministic Policy Engine    |        |                     |
+|                       |        |    ├── Max 3 Retries Cap          |        |                     |
+|                       |        |    ├── Cooldown Window (15m)      |        |                     |
+|                       |        |    ├── Card Decline Protection    |        |                     |
+|                       |        |    └── Human Escalation (>50k)    |        |                     |
++-----------------------+        +-----------------------------------+        +---------------------+
+          |                                        |                                      |
+          +----------------------------------------+--------------------------------------+
+                                                   |
+                                                   | SQLAlchemy 2.0 ORM
+                                                   v
++---------------------------------------------------------------------------------------------------+
+|                                     PERSISTENCE & AUDIT LAYER                                     |
+|                                                                                                   |
+|   PostgreSQL 17 Database                                                                          |
+|   ├── customers       (Demographics, payment success ratios, account age)                         |
+|   ├── merchants       (Business profile, billing categories, historical GMV)                      |
+|   ├── payments        (Transaction records, gateway error codes, retry counts)                    |
+|   ├── recovery_cases  (Lifecycle state, ML score, AI diagnosis, final action)                     |
+|   ├── recovery_actions(Scheduled & executed recovery attempts, execution status)                 |
+|   └── audit_logs      (Immutable chronological ledger of all AI and policy events)                |
++---------------------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 📡 Core API Endpoints
+## End-to-End Recovery Lifecycle
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/health` | Standard service health probe (`{"status": "ok"}`) |
-| `GET` | `/api/health/system` | Detailed component health including PostgreSQL connection |
-| `GET` | `/api/analytics/overview` | Financial KPIs: Revenue at Risk, Potentially Recoverable, Recovered Revenue, Recovery Rate |
-| `GET` | `/api/analytics/recovery-trend` | 14-day daily recovery trend time series |
-| `GET` | `/api/analytics/failure-breakdown` | Root cause failure counts, amount at risk, and recovery rate |
-| `GET` | `/api/analytics/action-breakdown` | Recovery action performance: attempts, conversions, amount |
-| `GET` | `/api/payments` | List payments with `search`, `status`, and `failure_reason` filters |
-| `GET` | `/api/payments/{id}` | Detailed payment metadata with customer and merchant profile |
-| `GET` | `/api/recovery/cases` | Paginated recovery cases with status filtering across 9 states |
-| `GET` | `/api/recovery/cases/{id}` | Detailed case forensics with payment and action history |
-| `GET` | `/api/recovery/cases/{id}/timeline` | Full chronological investigation and execution audit trail |
-| `POST` | `/api/recovery/analyze/{payment_id}` | Trigger risk detection and ML recoverability prediction |
-| `POST` | `/api/ai/investigate/{payment_id}` | Trigger Gemini 2.5 Flash AI investigation & policy governance |
-| `GET` | `/api/ai/investigations/{payment_id}` | Retrieve cached forensic AI report and evidence factors |
-| `POST` | `/api/recovery/execute/{case_id}` | Execute simulated recovery action with idempotency enforcement |
-| `POST` | `/api/recovery/run-batch` | Run batch recovery processing over eligible cases |
-| `GET` | `/api/recovery/audit-logs` | Query system audit ledger with pagination and event filtering |
+```
+[ Failed Payment Event ]
+          |
+          v
++-------------------+
+|      DETECT       |  Identify failed, expired, or abandoned transactions from gateway feeds
++---------+---------+
+          |
+          v
++-------------------+
+|     DIAGNOSE      |  Classify failure root cause: TEMPORARY_BANK_FAILURE, INSUFFICIENT_FUNDS,
++---------+---------+  AUTHENTICATION_FAILED, NETWORK_ERROR, EXPIRED_PAYMENT, or CARD_DECLINED
+          |
+          v
++-------------------+
+|      PREDICT      |  Compute ML Recoverability Score (0.0% to 100.0%) based on customer tenure,
++---------+---------+  historical success rate, transaction amount, and failure reason
+          |
+          v
++-------------------+
+|    RECOMMEND      |  Google Gemini 2.5 Flash evaluates forensic telemetry and proposes:
++---------+---------+  Action (RETRY_LATER, SEND_PAYMENT_LINK, CUSTOMER_REMINDER), delay, channel
+          |
+          v
++-------------------+
+|   POLICY CHECK    |  Deterministic Policy Engine validates action against immutable guardrails.
++---------+---------+  Approve action, override to safe fallback, or halt execution
+          |
+          +-----------------------------+-----------------------------+
+          |                             |                             |
+      [ APPROVED ]                 [ OVERRIDDEN ]                  [ STOPPED ]
+          |                             |                             |
+          v                             v                             v
++-------------------+         +-------------------+         +-------------------+
+|      EXECUTE      |         |   FALLBACK ACTION |         |   HALT WORKFLOW   |
+| Run policy-safe   |         | Execute policy    |         | Terminate case to |
+| recovery in       |         | substitution      |         | prevent fatigue & |
+| simulation sandbox|         | (e.g., Smart Link)|         | gateway penalties |
++---------+---------+         +---------+---------+         +---------+---------+
+          |                             |                             |
+          +-----------------------------+                             |
+          |                                                           |
+          v                                                           |
++-------------------+                                                 |
+|      RECOVER      |                                                 |
+| Mark transaction  |                                                 |
+| RECOVERED, credit |                                                 |
+| settled ledger    |                                                 |
++---------+---------+                                                 |
+          |                                                           |
+          +-----------------------------+-----------------------------+
+                                        |
+                                        v
+                              +-------------------+
+                              |       AUDIT       |  Append chronological event to immutable
+                              +---------+---------+  audit ledger with actor attribution
+                                        |
+                                        v
+                              +-------------------+
+                              |      MEASURE      |  Update real-time financial KPIs, recovery
+                              +-------------------+  rate, conversion metrics, and ROI
+```
 
 ---
 
-## 🎯 5-Minute Buildathon Demo Flow (`PAY_10482`)
+## Technology Stack
 
-1. **Step 1 — Main Dashboard (`/dashboard`)**:
-   - Highlight the 4 core financial KPIs: Revenue at Risk (`₹14.90L`), Potentially Recoverable (`₹9.43L`), Recovered Revenue (`₹751.44k`), Recovery Rate (`79.7%`).
-   - Walk through the visual **Recovery Funnel** (`At Risk → Salvageable → Attempted → Recovered`).
-   - Review the 14-day daily recovery trend and failure breakdown.
-2. **Step 2 — Featured Demo Case Selection**:
-   - Click the prominent **PAY_10482** shortcut card from the dashboard header (or open **Recovery Cases** and filter).
-3. **Step 3 — Case Forensics (`/recovery/:caseId`)**:
-   - Inspect payment details: `₹8,500.00`, `UPI`, failure reason: `BANK_TIMEOUT`, 0 prior retries.
-   - Observe **ML Recoverability Score**: `98.5%` (HIGH salvageability tier).
-4. **Step 4 — Gemini AI Autonomous Investigation**:
-   - Review AI diagnosis: `TEMPORARY_BANK_FAILURE` with `95%` confidence.
-   - Inspect forensic telemetry evidence cards (customer tenure, gateway transience, payment pattern).
-   - See AI proposed action: `RETRY_LATER` via `GATEWAY_RETRY` with a 15-minute recommended delay.
-5. **Step 5 — Deterministic Policy Check**:
-   - Review visual 3-stage governance flow: `AI Proposed (RETRY_LATER) → Policy Check (ALLOWED) → Approved Final Action (RETRY_LATER)`.
-   - Confirm safety constraints: `0/3` retries, `48h` TTL window, no human escalation needed.
-6. **Step 6 — Simulated Recovery Execution**:
-   - Click **Execute Recovery Action**.
-   - Review the confirmation modal and simulation disclosure.
-   - Confirm execution.
-7. **Step 7 — Instant Resolution & Idempotency**:
-   - Status transitions to `RECOVERED`.
-   - Recovered amount updates to `₹8,500.00`.
-   - Re-clicking execute returns `idempotent: True` with **zero double-counting** of recovered revenue.
-8. **Step 8 — Chronological Audit Timeline**:
-   - Inspect the 6-event chronological audit log from gateway failure through AI investigation, policy approval, execution start, and settlement.
-9. **Step 9 — Batch Recovery Execution**:
-   - Click **Run Batch Recovery** in the header.
-   - Observe bulk execution across 500+ cases with instant aggregate revenue impact.
+### Frontend Application
+- **Framework**: React 18.3 with Vite 6
+- **Language**: TypeScript 5.7 (strict typing, zero any declarations in production paths)
+- **Styling**: Tailwind CSS 3.4 (custom light fintech palette, slate borders, accessible contrast)
+- **Data Visualization**: Recharts 2.15 (trend lines, funnel charts, failure distributions)
+- **Icons**: Lucide React
+- **Routing**: React Router DOM 7
 
----
+### Backend Application
+- **Framework**: FastAPI 0.115+ (ASGI high-performance web framework)
+- **Language**: Python 3.12+
+- **Data Validation & Settings**: Pydantic v2 & Pydantic Settings
+- **Server**: Uvicorn with single-process reload targeting application code
+- **Database ORM**: SQLAlchemy 2.0 (declarative models, relationship joins, transactional rollback)
+- **Database Migrations**: Alembic
 
-## 🚀 How to Run in Local Environment
+### Artificial Intelligence & Machine Learning
+- **LLM Engine**: Google Gemini 2.5 Flash via official Google GenAI SDK (google-genai)
+- **Reasoning Design**: Structured schema output enforcing strict JSON return types
+- **Read-Only Telemetry Tools**: Forensic data gathering for customer history, gateway codes, and merchant profile
+- **Classical ML**: Scikit-learn Logistic Regression pipeline serialized with Joblib for baseline recoverability scoring
+- **Numerical Processing**: NumPy
 
-### 1. Prerequisites
-- Python 3.12+
-- Node.js 18+ (verified with Node v24)
-- PostgreSQL 17 (running on `localhost:5432`)
+### Persistence & Storage
+- **Primary Database**: PostgreSQL 17
+- **Connection Protocol**: psycopg2-binary driver with connection pooling
+- **Audit Storage**: Append-only relational table with structured JSONB metadata
 
-### 2. Backend Setup
-```bash
-cd backend
-
-# Activate Python virtual environment
-.\venv\Scripts\activate  # On Windows
-# source venv/bin/activate # On macOS/Linux
-
-# Run migrations
-alembic upgrade head
-
-# Start FastAPI server (restrict reload watcher to app/ to avoid watching venv)
-uvicorn app.main:app --reload --reload-dir app --host 127.0.0.1 --port 8000
-```
-- API Health: `http://127.0.0.1:8000/api/health`
-- Swagger Docs: `http://127.0.0.1:8000/docs`
-
-### 3. Frontend Setup
-```bash
-cd frontend
-
-# Run Vite dev server
-npm run dev
-```
-- Dashboard UI: `http://localhost:5173`
-
-### 4. Running Backend Tests
-```bash
-cd backend
-.\venv\Scripts\pytest tests/ -v
-```
-**54 out of 54 tests passing (100% pass rate)** across risk calculation, ML prediction, Gemini investigation, policy safety rules, state machine, payment simulator, and recovery execution.
-
-### 5. Running Frontend Production Build
-```bash
-cd frontend
-npm run build
-```
-**0 TypeScript errors, 0 lint errors, clean Vite production bundle.**
+### Quality Assurance & Tooling
+- **Backend Testing**: Pytest with HTTPX test client and test database isolation
+- **Frontend Testing & Build**: TypeScript Compiler (tsc --noEmit) and Vite production bundler
 
 ---
 
-## 🎤 5-Minute Buildathon Pitch Script
+## AI Architecture & Policy Governance
 
-A full time-coded 5-minute presentation script matching the live demo flow is available at [`docs/pitch.md`](docs/pitch.md).
+RecoverAI avoids black-box conversational chatbots. The AI layer operates as a **Forensic Intelligence Agent** paired with a **Deterministic Policy Engine**.
+
+```
+                           RAW PAYMENT FAILURE TELEMETRY
+                                         │
+                                         ▼
+                 +───────────────────────────────────────────────+
+                 │           Read-Only Telemetry Tools           │
+                 │ ├── Customer Lifetime Transaction Ratio       │
+                 │ ├── Payment Method Specific Reliability       │
+                 │ ├── Gateway Error Classification              │
+                 │ └── Merchant Category Average Ticket Size     │
+                 +───────────────────────┬───────────────────────+
+                                         │
+                                         ▼
+                 +───────────────────────────────────────────────+
+                 │      Gemini 2.5 Flash Diagnostic Agent        │
+                 │                                               │
+                 │ Produces Structured JSON:                     │
+                 │ ├── Diagnosis & Root Cause Classification     │
+                 │ ├── Diagnostic Confidence Score (0.0 to 1.0)  │
+                 │ ├── Weighted Evidence Factors (+/- impact)    │
+                 │ ├── Proposed Recovery Action                  │
+                 │ └── Recommended Cooldown Delay (Minutes)      │
+                 +───────────────────────┬───────────────────────+
+                                         │
+                                         ▼
+                 +───────────────────────────────────────────────+
+                 │          Deterministic Policy Engine          │
+                 │                                               │
+                 │ Immutable Safety Checks:                      │
+                 │ 1. Retry Count Check: retry_count < 3         │
+                 │ 2. Window Validity: created_at within 48h TTL │
+                 │ 3. Card Decline Check: Prohibits retries on   │
+                 │    HARD_DECLINE / CARD_BLOCKED                │
+                 │ 4. Ticket Size Threshold: >= 50,000 INR       │
+                 │    automatically routed to ESCALATE_TO_HUMAN  │
+                 │ 5. Minimum Score: score < 20% -> STOP         │
+                 +───────────────────────┬───────────────────────+
+                                         │
+                       +─────────────────┴─────────────────+
+                       │                                   │
+              [ Policy: APPROVED ]                [ Policy: OVERRULED ]
+                       │                                   │
+                       ▼                                   ▼
+          Execute Recommended Action             Execute Safe Fallback
+          (e.g., Scheduled Retry)             (e.g., Alternative PayLink)
+```
+
+### Deterministic Safety Guardrails
+
+| Guardrail Rule | Condition | Enforced Policy Action | Rationale |
+|---|---|---|---|
+| **Max Retry Cap** | retry_count >= 3 | STOP_RECOVERY | Prevents gateway spamming and customer harassment. |
+| **Card Decline Guard** | Reason is CARD_DECLINED or LIMIT_EXCEEDED | SEND_PAYMENT_LINK | Retrying a declined card fails 98% of the time; a link allows selecting another card or UPI. |
+| **High Value Escalation** | Amount >= INR 50,000 with score < 60% | ESCALATE_TO_HUMAN | High-value VIP transactions warrant personalized white-glove operations handling. |
+| **Cooldown Period** | Network or bank timeout failure | Enforce 15-minute delay | Transient gateway switch failures require time to recover before re-querying. |
+| **Minimum Salvageability** | Recoverability score < 20.0% | STOP_RECOVERY | Conserves merchant bandwidth on definitively dead or fraudulent transactions. |
+| **Idempotency Guard** | Status is RECOVERED, STOPPED, or ESCALATED | Return current state | Prevents duplicate execution and artificial revenue inflation. |
+
+---
+
+
+## Repository File Structure
+
+```
+RecoverAI/
+├── backend/
+│   ├── alembic/                      # Database migration scripts
+│   ├── app/
+│   │   ├── api/                      # REST API routers (analytics, recovery, payments, ai)
+│   │   ├── config.py                 # Pydantic environment settings
+│   │   ├── database.py               # SQLAlchemy engine & session factory
+│   │   ├── main.py                   # FastAPI initialization & middleware
+│   │   ├── models/                   # Database models (Payment, Customer, RecoveryCase, etc.)
+│   │   ├── recovery/                 # Core recovery logic, policy engine, simulator
+│   │   ├── schemas/                  # Pydantic request & response models
+│   │   ├── services/                 # Business logic services & seeders
+│   │   └── utils/                    # ML pipeline, loggers, seed data
+│   ├── tests/                        # 54 comprehensive Pytest test cases
+│   ├── requirements.txt              # Python production dependencies
+│   └── alembic.ini                   # Alembic configuration
+├── frontend/
+│   ├── src/
+│   │   ├── api/                      # Axios API clients & typed endpoints
+│   │   ├── components/               # UI components (dashboard, layout, common)
+│   │   ├── pages/                    # Views (Dashboard, Cases, CaseDetails, Analytics, Audit)
+│   │   ├── types/                    # TypeScript interfaces & enums
+│   │   ├── utils/                    # Formatting helpers (Currency, Dates)
+│   │   ├── App.tsx                   # Layout wrapper & client router
+│   │   └── main.tsx                  # React entry point
+│   ├── package.json                  # Node dependencies & scripts
+│   ├── tailwind.config.js            # Tailwind theme tokens
+│   └── vite.config.ts                # Vite build configuration
+└── README.md                         # Project documentation
+```
+
+---
